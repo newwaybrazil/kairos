@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket Client</title>
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <script type="text/javascript" src="/socketcluster.js"></script>
+  </head>
+    <body>
+    <input id="channel" />
+    <button id="subscribe" onclick="subscribe()">Subscribe</button>
+    <button id="unsubscribe" onclick="unsubscribe()">Unsubscribe</button>
+    <p id="messages"></p>
+    <ul id="terminal"></ul>
+    <script type="text/javascript">
+        function write(text, msgs)
+        {
+            var date = new Date();
+            var dateText = '['+date.getFullYear()+'-'+(date.getMonth()+1 > 9 ? date.getMonth()+1 : '0'+date.getMonth()+1)+'-'+(date.getDate() > 9 ? date.getDate() : '0'+date.getDate())+' '+(date.getHours() > 9 ? date.getHours() : '0'+date.getHours())+':'+(date.getMinutes() > 9 ? date.getMinutes() : '0'+date.getMinutes())+':'+(date.getSeconds() > 9 ? date.getSeconds() : '0'+date.getSeconds())+']';
+            var terminal = document.getElementById('terminal');
+            var messages = document.getElementById('messages');
+
+            if (terminal.innerHTML.length > 5000) {
+                terminal.innerHTML = '';
+            }
+            
+            terminal.innerHTML = '<li>'+dateText+' '+text+'</li>'+terminal.innerHTML;
+            messages.innerHTML = msgs;
+        }
+
+      var socket = socketCluster.connect();
+      var messages = 0;
+
+      socket.on('error', function (err) {
+        console.error(err);
+      });
+
+      socket.on('connect', function () {
+        write('Socket is connected', 0);
+      });
+
+      socket.on('disconnect', function () {
+        write('Socket is disconnected', 0);
+      });
+
+      socket.on('generic', function (data) {
+        messages++;
+        write('Received generic event with data: ' + data, messages);
+      });
+
+      function subscribe()
+      {
+        var input = document.getElementById('channel');
+        var channel = input.value;
+
+        var alreadySub = socket.isSubscribed(channel);
+        if (!alreadySub) {
+            var sampleChannel = socket.subscribe(channel);
+            write('Subscribe to channel: ' + channel, messages);
+
+            sampleChannel.watch(function (data) {
+                messages++;
+                write('Channel ' + channel + ' message: ' + data, messages);
+            });
+
+            sampleChannel.on('subscribeFail', function (err) {
+                console.log('Error on subscribe channel ' + channel);
+            });
+        }
+      }
+
+      function unsubscribe()
+      {
+        var input = document.getElementById('channel');
+        var channel = input.value;
+
+        var alreadySub = socket.isSubscribed(channel);
+        if (alreadySub) {
+            socket.unsubscribe(channel);
+            write('Unsubscribe to channel: ' + channel, messages);
+        }
+      }
+    </script>
+  </body>
+</html>
