@@ -1,8 +1,4 @@
 class DateTime {
-  constructor(date) {
-    this.date = date;
-  }
-
   // eslint-disable-next-line class-methods-use-this
   alwaysTwoDigits(number) {
     let result = number;
@@ -12,32 +8,39 @@ class DateTime {
     return String(result);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getFullYear() {
-    return this.date.getFullYear();
+    const currentDate = new Date();
+    return currentDate.getFullYear();
   }
 
   getMonth() {
-    const month = this.date.getMonth() + 1;
+    const currentDate = new Date();
+    const month = currentDate.getMonth() + 1;
     return this.alwaysTwoDigits(month);
   }
 
   getDay() {
-    const day = this.date.getDate();
+    const currentDate = new Date();
+    const day = currentDate.getDate();
     return this.alwaysTwoDigits(day);
   }
 
   getHours() {
-    const hours = this.date.getHours();
+    const currentDate = new Date();
+    const hours = currentDate.getHours();
     return this.alwaysTwoDigits(hours);
   }
 
   getMinutes() {
-    const mins = this.date.getMinutes();
+    const currentDate = new Date();
+    const mins = currentDate.getMinutes();
     return this.alwaysTwoDigits(mins);
   }
 
   getSeconds() {
-    const secs = this.date.getSeconds();
+    const currentDate = new Date();
+    const secs = currentDate.getSeconds();
     return this.alwaysTwoDigits(secs);
   }
 
