@@ -24,8 +24,7 @@ class Worker extends SCWorker {
     healthChecker.attach(this, app);
     httpServer.on('request', app);
 
-    const date = new Date();
-    const dateTime = new DateTime(date);
+    const dateTime = new DateTime();
     const log = new Log(dateTime, Colors);
     const redisConnections = new RedisConnections(Config, Redis);
     const connections = redisConnections.connect();
