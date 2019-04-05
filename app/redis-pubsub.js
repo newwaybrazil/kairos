@@ -77,6 +77,7 @@ class RedisPubSub {
           }
           this.socket.emit(message);
           this.log.debug('cyan', `SOCKET - Sending generic message from server ${this.actualServer}: ${message}`);
+          return true;
         });
       }
       return true;

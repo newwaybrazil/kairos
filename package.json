@@ -42,7 +42,7 @@
   "scripts": {
     "start": "node server.js",
     "start:docker": "node dockerwait.js && node ${SOCKETCLUSTER_MASTER_CONTROLLER:-server.js}",
-    "test": "nyc --reporter=html --reporter=text mocha",
+    "test": "nyc --reporter=html --reporter=text-lcov --reporter=text mocha",
     "lint": "./node_modules/eslint/bin/eslint.js *.js"
   },
   "devDependencies": {

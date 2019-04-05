@@ -12,10 +12,7 @@ class RedisConnections {
           host: element.host,
           port: element.port,
           autoResubscribe: false,
-          retryStrategy: /* istanbul ignore next */ () => {
-            const delay = 5000;
-            return delay;
-          },
+          retryStrategy: 5000,
         });
         connections.push(redis);
       });

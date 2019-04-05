@@ -5,6 +5,7 @@
 .node_repl_history
 .npm
 .nyc_output
+.scannerwork
 *.log
 *.pid
 *.pid.lock
