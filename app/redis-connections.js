@@ -12,7 +12,7 @@ class RedisConnections {
           host: element.host,
           port: element.port,
           autoResubscribe: false,
-          retryStrategy: 5000,
+          retryStrategy: () => 5000,
         });
         connections.push(redis);
       });
