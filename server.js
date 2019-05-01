@@ -1,19 +1,19 @@
 /* eslint-disable */
-/*
-  This is the SocketCluster master controller file.
-  It is responsible for bootstrapping the SocketCluster master process.
-  Be careful when modifying the options object below.
-  If you plan to run SCC on Kubernetes or another orchestrator at some point
-  in the future, avoid changing the environment variable names below as
-  each one has a specific meaning within the SC ecosystem.
-*/
-
 const path = require('path');
 const argv = require('minimist')(process.argv.slice(2));
 const scHotReboot = require('sc-hot-reboot');
 
-const fsUtil = require('socketcluster/fsutil');
+const Log = require('./app/log.js');
+const Colors = require('./app/colors.js');
+const DateTime = require('./app/date-time.js');
+const Config = require('./config/config');
+const ValidateConfig = require('./app/validate-config');
 
+const dateTime = new DateTime();
+const log = new Log(dateTime, Colors);
+const validateConfig = new ValidateConfig(log);
+
+const fsUtil = require('socketcluster/fsutil');
 const { waitForFile } = fsUtil;
 
 const SocketCluster = require('socketcluster');
@@ -24,12 +24,13 @@ const workerClusterControllerPath = argv.wcc || process.env.SOCKETCLUSTER_WORKER
 const environment = process.env.ENV || 'dev';
 
 const options = {
+  logLevel: 1,
   workers: Number(argv.w) || Number(process.env.SOCKETCLUSTER_WORKERS) || 1,
   brokers: Number(argv.b) || Number(process.env.SOCKETCLUSTER_BROKERS) || 1,
   port: Number(argv.p) || Number(process.env.SOCKETCLUSTER_PORT) || 8000,
   // You can switch to 'sc-uws' for improved performance.
   wsEngine: process.env.SOCKETCLUSTER_WS_ENGINE || 'ws',
-  appName: argv.n || process.env.SOCKETCLUSTER_APP_NAME || null,
+  appName: 'Kairos',
   workerController: workerControllerPath || path.join(__dirname, 'worker.js'),
   brokerController: brokerControllerPath || path.join(__dirname, 'broker.js'),
   workerClusterController: workerClusterControllerPath || null,
@@ -48,10 +49,16 @@ const options = {
   // If using nodemon, set this to true, and make sure that environment is 'dev'.
   killMasterOnSignal: false,
   environment,
+  brokerOptions: {
+    host: 'localhost',
+    port: 6379
+  }
 };
 
 const bootTimeout = Number(process.env.SOCKETCLUSTER_CONTROLLER_BOOT_TIMEOUT) || 10000;
 let SOCKETCLUSTER_OPTIONS;
+
+const validate = validateConfig.validate(Config);
 
 if (process.env.SOCKETCLUSTER_OPTIONS) {
   SOCKETCLUSTER_OPTIONS = JSON.parse(process.env.SOCKETCLUSTER_OPTIONS);
@@ -65,16 +72,17 @@ for (const i in SOCKETCLUSTER_OPTIONS) {
 
 const start = function () {
   const socketCluster = new SocketCluster(options);
+  socketCluster.on('connection', /* istanbul ignore next */(socket) => {
+    this.log.debug('magenta', `SOCKET - Client ${socket.id} is connected`);
+  });
+  log.debug('bright', `Starting Kairos`);
 
   socketCluster.on(socketCluster.EVENT_WORKER_CLUSTER_START, (workerClusterInfo) => {
-    console.log('   >> WorkerCluster PID:', workerClusterInfo.pid);
+    log.debug('reset', `WorkerCluster PID: ${workerClusterInfo.pid} - Starting`);
   });
 
   if (socketCluster.options.environment === 'dev') {
-    // This will cause SC workers to reboot when code changes anywhere in the app directory.
-    // The second options argument here is passed directly to chokidar.
-    // See https://github.com/paulmillr/chokidar#api for details.
-    console.log(`   !! The sc-hot-reboot plugin is watching for code changes in the ${__dirname} directory`);
+    log.debug('reset', `!! Kairos is watching for code changes in the ${__dirname} directory`);
     scHotReboot.attach(socketCluster, {
       cwd: __dirname,
       ignored: ['public', 'node_modules', 'README.md', 'Dockerfile', 'server.js', 'broker.js', /[\/\\]\./, '*.log'],
@@ -88,7 +96,7 @@ const bootStartTime = Date.now();
 // Detect when Docker volumes are ready.
 const startWhenFileIsReady = (filePath) => {
   const errorMessage = `Failed to locate a controller file at path ${filePath} `
-  + 'before SOCKETCLUSTER_CONTROLLER_BOOT_TIMEOUT';
+    + 'before SOCKETCLUSTER_CONTROLLER_BOOT_TIMEOUT';
 
   return waitForFile(filePath, bootCheckInterval, bootStartTime, bootTimeout, errorMessage);
 };
@@ -98,7 +106,14 @@ const filesReadyPromises = [
   startWhenFileIsReady(brokerControllerPath),
   startWhenFileIsReady(workerClusterControllerPath),
 ];
+
 Promise.all(filesReadyPromises)
+  .then(() => {
+    validateConfig.validate(Config);
+    // if (!validate) {
+    //   throw new Error('Error on load config');
+    // }
+  })
   .then(() => {
     start();
   })
@@ -106,3 +121,4 @@ Promise.all(filesReadyPromises)
     console.error(err.stack);
     process.exit(1);
   });
+  

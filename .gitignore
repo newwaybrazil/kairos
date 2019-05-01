@@ -6,6 +6,7 @@
 .npm
 .nyc_output
 .scannerwork
+.vscode
 *.log
 *.pid
 *.pid.lock

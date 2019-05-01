@@ -1,16 +1,24 @@
 /* eslint-disable */
 const SCBroker = require('socketcluster/scbroker');
 const scClusterBrokerClient = require('scc-broker-client');
+const kairosBroker = require('./app/kairos-broker.js');
+
+const Log = require('./app/log.js');
+const Colors = require('./app/colors.js');
+const DateTime = require('./app/date-time.js');
+const BrokerControl = require('./app/broker-control');
+
+const dateTime = new DateTime();
+const log = new Log(dateTime, Colors);
 
 class Broker extends SCBroker {
   run() {
-    console.log('   >> Broker PID:', process.pid);
+    log.debug('yellow', `Broker PID: ${process.pid} - Starting`);
 
-    // This is defined in server.js (taken from environment variable SC_CLUSTER_STATE_SERVER_HOST).
-    // If this property is defined, the broker will try to attach itself to the SC cluster for
-    // automatic horizontal scalability.
-    // This is mostly intended for the Kubernetes deployment of SocketCluster - In this case,
-    // The clustering/sharding all happens automatically.
+    kairosBroker.attach(this);
+
+    const brokerControl = new BrokerControl(log, this, process.pid);
+    brokerControl.listen();
 
     if (this.options.clusterStateServerHost) {
       scClusterBrokerClient.attach(this, {

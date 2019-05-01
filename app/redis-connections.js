@@ -8,13 +8,23 @@ class RedisConnections {
     try {
       const connections = [];
       this.config.forEach((element) => {
-        const redis = new this.Redis({
+        const pubConn = new this.Redis({
           host: element.host,
           port: element.port,
           autoResubscribe: false,
           retryStrategy: () => 5000,
         });
-        connections.push(redis);
+        const subConn = new this.Redis({
+          host: element.host,
+          port: element.port,
+          autoResubscribe: false,
+          retryStrategy: () => 5000,
+        });
+        const conn = {
+          pubClient: pubConn,
+          subClient: subConn,
+        };
+        connections.push(conn);
       });
       return connections;
     } catch (error) {

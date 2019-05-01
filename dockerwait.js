@@ -16,7 +16,7 @@ const bootTimeout = Number(process.env.SOCKETCLUSTER_CONTROLLER_BOOT_TIMEOUT) ||
 const bootStartTime = Date.now();
 
 const errorMessage = `Failed to locate the master controller file at path ${masterControllerPath} `
-+ 'before SOCKETCLUSTER_CONTROLLER_BOOT_TIMEOUT';
+  + 'before SOCKETCLUSTER_CONTROLLER_BOOT_TIMEOUT';
 
 waitForFile(masterControllerPath, bootCheckInterval, bootStartTime, bootTimeout, errorMessage)
   .catch((err) => {

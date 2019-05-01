@@ -43,7 +43,7 @@
     "start": "node server.js",
     "start:docker": "node dockerwait.js && node ${SOCKETCLUSTER_MASTER_CONTROLLER:-server.js}",
     "test": "nyc --reporter=html --reporter=text-lcov --reporter=text mocha",
-    "lint": "./node_modules/eslint/bin/eslint.js *.js"
+    "lint": "./node_modules/eslint/bin/eslint.js *.js ./app/*.js ./config/*.js"
   },
   "devDependencies": {
     "eslint": "^5.15.2",

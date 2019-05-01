@@ -19,7 +19,6 @@ class BrokerControl {
         this.log.debug('yellow', `Broker PID: ${this.pid} - Unsubscribe channel ${channel}`);
       });
 
-
       return true;
     } catch (error) {
       return false;
