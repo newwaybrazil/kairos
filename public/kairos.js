@@ -1027,6 +1027,32 @@
         };
 
         SCClientSocket.prototype.publish = function (channelName, data, callback) {
+          var seed = Date.now();
+          if (window.performance && typeof window.performance.now === "function") {
+            seed += performance.now();
+          }
+
+          var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = (seed + Math.random() * 16) % 16 | 0;
+            seed = Math.floor(seed / 16);
+
+            return (c === 'x' ? r : r & (0x3 | 0x8)).toString(16);
+          });
+          var d = new Date();
+          var time = d / 1000 | 0;
+          var year = d.getFullYear().toString();
+          var month = ((d.getMonth()+1).toString().length==2?(d.getMonth()+1).toString():"0"+(d.getMonth()+1).toString());
+          var day = (d.getDate().toString().length==2?d.getDate().toString():"0"+d.getDate().toString());
+          var hour = (d.getHours().toString().length==2?d.getHours().toString():"0"+d.getHours().toString());
+          var minute = ((parseInt(d.getMinutes())).toString().length==2?(parseInt(d.getMinutes())).toString():"0"+(parseInt(d.getMinutes())).toString());
+          var second = ((parseInt(d.getSeconds())).toString().length==2?(parseInt(d.getSeconds())).toString():"0"+(parseInt(d.getSeconds())).toString());
+          var sent_in = year+"-"+month+"-"+day+" "+hour+":"+minute+":"+second;
+          data = JSON.stringify({
+            "id": uuid,
+            "message": data,
+            "sent_in": sent_in,
+            "timestamp": time
+          });
           var pubData = {
             channel: this._decorateChannelName(channelName),
             data: data
