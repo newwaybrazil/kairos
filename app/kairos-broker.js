@@ -3,7 +3,7 @@ const Redis = require('ioredis');
 const Log = require('./log.js');
 const Colors = require('./colors.js');
 const DateTime = require('./date-time.js');
-const Config = require('../config/config.js');
+const Config = require('../config/redis.js');
 const RedisConnections = require('./redis-connections');
 const RedisControl = require('./redis-control');
 

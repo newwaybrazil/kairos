@@ -1,4 +1,3 @@
-/* eslint-disable */
 const SCBroker = require('socketcluster/scbroker');
 const scClusterBrokerClient = require('scc-broker-client');
 const kairosBroker = require('./app/kairos-broker.js');
