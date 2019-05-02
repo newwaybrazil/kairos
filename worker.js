@@ -1,4 +1,3 @@
-/* eslint-disable */
 const SCWorker = require('socketcluster/scworker');
 const express = require('express');
 const serveStatic = require('serve-static');

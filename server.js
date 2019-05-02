@@ -1,7 +1,9 @@
-/* eslint-disable */
 const path = require('path');
 const argv = require('minimist')(process.argv.slice(2));
 const scHotReboot = require('sc-hot-reboot');
+
+const SocketCluster = require('socketcluster');
+const fsUtil = require('socketcluster/fsutil');
 
 const Log = require('./app/log.js');
 const Colors = require('./app/colors.js');
@@ -13,10 +15,7 @@ const dateTime = new DateTime();
 const log = new Log(dateTime, Colors);
 const validateConfig = new ValidateConfig(log);
 
-const fsUtil = require('socketcluster/fsutil');
 const { waitForFile } = fsUtil;
-
-const SocketCluster = require('socketcluster');
 
 const workerControllerPath = argv.wc || process.env.SOCKETCLUSTER_WORKER_CONTROLLER;
 const brokerControllerPath = argv.bc || process.env.SOCKETCLUSTER_BROKER_CONTROLLER;
@@ -49,16 +48,10 @@ const options = {
   // If using nodemon, set this to true, and make sure that environment is 'dev'.
   killMasterOnSignal: false,
   environment,
-  brokerOptions: {
-    host: 'localhost',
-    port: 6379
-  }
 };
 
 const bootTimeout = Number(process.env.SOCKETCLUSTER_CONTROLLER_BOOT_TIMEOUT) || 10000;
 let SOCKETCLUSTER_OPTIONS;
-
-const validate = validateConfig.validate(Config);
 
 if (process.env.SOCKETCLUSTER_OPTIONS) {
   SOCKETCLUSTER_OPTIONS = JSON.parse(process.env.SOCKETCLUSTER_OPTIONS);
@@ -110,9 +103,6 @@ const filesReadyPromises = [
 Promise.all(filesReadyPromises)
   .then(() => {
     validateConfig.validate(Config);
-    // if (!validate) {
-    //   throw new Error('Error on load config');
-    // }
   })
   .then(() => {
     start();
@@ -121,4 +111,3 @@ Promise.all(filesReadyPromises)
     console.error(err.stack);
     process.exit(1);
   });
-  
