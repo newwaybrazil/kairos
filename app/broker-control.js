@@ -8,7 +8,7 @@ class BrokerControl {
   listen() {
     try {
       this.scBroker.on('publish', /* istanbul ignore next */(channel, message) => {
-        this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel} :${message}`);
+        this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel} :${message} from client`);
       });
 
       this.scBroker.on('subscribe', /* istanbul ignore next */(channel) => {
