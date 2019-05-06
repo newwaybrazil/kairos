@@ -9,26 +9,46 @@ class RedisControl {
     this.instanceIdRegex = /^[^\\/]*\//;
   }
 
-  bindSubscribe(connections, key) {
+  bindSubscribe(key) {
     const voidCallback = () => { };
     this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Binding subscribe`);
     if (this.actualServer > -1 && this.actualServer === key) {
-      return connections[this.actualServer].subClient.subscribe.bind(
-        connections[this.actualServer].subClient,
+      return this.connections[this.actualServer].subClient.subscribe.bind(
+        this.connections[this.actualServer].subClient,
       );
     }
     return voidCallback;
   }
 
-  bindUnsubscribe(connections, key) {
+  bindUnsubscribe(key) {
     const voidCallback = () => { };
     this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Binding unsubscribe`);
     if (this.actualServer > -1 && this.actualServer === key) {
-      return connections[this.actualServer].subClient.unsubscribe.bind(
-        connections[this.actualServer].subClient,
+      return this.connections[this.actualServer].subClient.unsubscribe.bind(
+        this.connections[this.actualServer].subClient,
       );
     }
     return voidCallback;
+  }
+
+  bindMessages() {
+    this.connections.forEach((subElement) => {
+      subElement.subClient.removeAllListeners('message');
+    });
+    this.connections[this.actualServer].subClient.addListener('message', /* istanbul ignore next */(channel, message) => {
+      this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel}: ${message} on server ${this.actualServer}`);
+      let sender = null;
+      const newMessage = message.replace(this.instanceIdRegex, (match) => {
+        sender = match.slice(0, -1);
+        return '';
+      });
+
+      if (sender == null || sender !== this.instanceId) {
+        this.broker.publish(channel, newMessage);
+      }
+    });
+    this.broker.on('subscribe', this.bindSubscribe(this.actualServer));
+    this.broker.on('unsubscribe', this.bindUnsubscribe(this.actualServer));
   }
 
   resubscribe() {
@@ -52,24 +72,8 @@ class RedisControl {
           if (this.healhServers.indexOf(key) === -1) {
             this.healhServers.push(key);
             if (this.actualServer === -1) {
-              this.connections.forEach((subElement) => {
-                subElement.subClient.removeAllListeners('message');
-              });
-              this.connections[key].subClient.addListener('message', /* istanbul ignore next */(channel, message) => {
-                this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel}: ${message} on server ${this.actualServer}`);
-                let sender = null;
-                const newMessage = message.replace(this.instanceIdRegex, (match) => {
-                  sender = match.slice(0, -1);
-                  return '';
-                });
-
-                if (sender == null || sender !== this.instanceId) {
-                  this.broker.publish(channel, newMessage);
-                }
-              });
               [this.actualServer] = this.healhServers;
-              this.broker.on('subscribe', this.bindSubscribe(this.connections, key));
-              this.broker.on('unsubscribe', this.bindUnsubscribe(this.connections, key));
+              this.bindMessages();
               this.resubscribe();
               this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Current server ${this.actualServer}`);
             }
@@ -83,23 +87,7 @@ class RedisControl {
             this.log.debug('red', `Broker PID: ${this.pid} - REDIS - Removing health server ${key}`);
             this.healhServers.splice(this.healhServers.indexOf(key), 1);
             [this.actualServer] = this.healhServers;
-            this.connections.forEach((subElement) => {
-              subElement.subClient.removeAllListeners('message');
-            });
-            this.connections[this.actualServer].subClient.addListener('message', /* istanbul ignore next */(channel, message) => {
-              this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel}: ${message} on server ${this.actualServer}`);
-              let sender = null;
-              const newMessage = message.replace(this.instanceIdRegex, (match) => {
-                sender = match.slice(0, -1);
-                return '';
-              });
-
-              if (sender == null || sender !== this.instanceId) {
-                this.broker.publish(channel, newMessage);
-              }
-            });
-            this.broker.on('subscribe', this.bindSubscribe(this.connections, this.actualServer));
-            this.broker.on('unsubscribe', this.bindUnsubscribe(this.connections, this.actualServer));
+            this.bindMessages();
             this.resubscribe();
             this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Current server ${this.actualServer}`);
           }
