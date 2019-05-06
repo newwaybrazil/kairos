@@ -12,12 +12,14 @@ class RedisConnections {
           host: element.host,
           port: element.port,
           autoResubscribe: false,
+          maxRetriesPerRequest: null,
           retryStrategy: () => 5000,
         });
         const subConn = new this.Redis({
           host: element.host,
           port: element.port,
           autoResubscribe: false,
+          maxRetriesPerRequest: null,
           retryStrategy: () => 5000,
         });
         const conn = {
