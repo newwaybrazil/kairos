@@ -9,31 +9,34 @@ class RedisControl {
     this.instanceIdRegex = /^[^\\/]*\//;
   }
 
+  doNothing() {
+    const doNothing = () => { };
+    return doNothing;
+  }
+
   bindSubscribe(key) {
-    const voidCallback = () => { };
     this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Binding subscribe`);
     if (this.actualServer > -1 && this.actualServer === key) {
       return this.connections[this.actualServer].subClient.subscribe.bind(
         this.connections[this.actualServer].subClient,
       );
     }
-    return voidCallback;
+    return this.doNothing();
   }
 
   bindUnsubscribe(key) {
-    const voidCallback = () => { };
     this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Binding unsubscribe`);
     if (this.actualServer > -1 && this.actualServer === key) {
       return this.connections[this.actualServer].subClient.unsubscribe.bind(
         this.connections[this.actualServer].subClient,
       );
     }
-    return voidCallback;
+    return this.doNothing();
   }
 
   bindMessages() {
-    this.connections.forEach((subElement) => {
-      subElement.subClient.removeAllListeners('message');
+    this.connections.forEach((element) => {
+      element.subClient.removeAllListeners('message');
     });
     this.connections[this.actualServer].subClient.addListener('message', /* istanbul ignore next */(channel, message) => {
       this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel}: ${message} on server ${this.actualServer}`);
@@ -49,6 +52,7 @@ class RedisControl {
     });
     this.broker.on('subscribe', this.bindSubscribe(this.actualServer));
     this.broker.on('unsubscribe', this.bindUnsubscribe(this.actualServer));
+    return true;
   }
 
   resubscribe() {
@@ -61,7 +65,9 @@ class RedisControl {
         this.broker.emit('subscribe', [channel]);
       });
       this.log.debug('magenta', `Broker PID: ${this.pid} - REDIS Reset subscriptions`);
+      return true;
     }
+    return false;
   }
 
   listen() {
@@ -94,13 +100,10 @@ class RedisControl {
           this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Health servers: ${this.healhServers}`);
         });
 
-        element.subClient.on('error', /* istanbul ignore next */() => {
-        });
+        element.subClient.on('error', this.doNothing());
 
-        element.pubClient.on('error', /* istanbul ignore next */() => {
-        });
+        element.pubClient.on('error', this.doNothing());
       });
-
       return true;
     } catch (error) {
       return false;
