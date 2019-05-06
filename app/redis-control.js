@@ -9,8 +9,27 @@ class RedisControl {
     this.instanceIdRegex = /^[^\\/]*\//;
   }
 
+  checkCurrentServer() {
+    if (this.actualServer === -1 || typeof this.actualServer === 'undefined') {
+      this.log.debug('white', `Broker PID: ${this.pid} - REDIS - No servers available!`);
+      return false;
+    }
+    this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Current server ${this.actualServer}`);
+    return true;
+  }
+
+  checkHealthServers() {
+    if (this.healhServers.length < 1) {
+      this.actualServer = -1;
+      this.log.debug('white', `Broker PID: ${this.pid} - REDIS - No health servers available!`);
+      return false;
+    }
+    this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Health servers: ${this.healhServers}`);
+    return true;
+  }
+
   doNothing() {
-    const doNothing = () => { };
+    const doNothing = () => {};
     return doNothing;
   }
 
@@ -38,21 +57,24 @@ class RedisControl {
     this.connections.forEach((element) => {
       element.subClient.removeAllListeners('message');
     });
-    this.connections[this.actualServer].subClient.addListener('message', /* istanbul ignore next */(channel, message) => {
-      this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel}: ${message} on server ${this.actualServer}`);
-      let sender = null;
-      const newMessage = message.replace(this.instanceIdRegex, (match) => {
-        sender = match.slice(0, -1);
-        return '';
-      });
+    if (typeof this.actualServer !== 'undefined') {
+      this.connections[this.actualServer].subClient.addListener('message', /* istanbul ignore next */(channel, message) => {
+        this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel}: ${message} on server ${this.actualServer}`);
+        let sender = null;
+        const newMessage = message.replace(this.instanceIdRegex, (match) => {
+          sender = match.slice(0, -1);
+          return '';
+        });
 
-      if (sender == null || sender !== this.instanceId) {
-        this.broker.publish(channel, newMessage);
-      }
-    });
-    this.broker.on('subscribe', this.bindSubscribe(this.actualServer));
-    this.broker.on('unsubscribe', this.bindUnsubscribe(this.actualServer));
-    return true;
+        if (sender == null || sender !== this.instanceId) {
+          this.broker.publish(channel, newMessage);
+        }
+      });
+      this.broker.on('subscribe', this.bindSubscribe(this.actualServer));
+      this.broker.on('unsubscribe', this.bindUnsubscribe(this.actualServer));
+      return true;
+    }
+    return false;
   }
 
   resubscribe() {
@@ -64,7 +86,7 @@ class RedisControl {
         this.broker.emit('unsubscribe', [channel]);
         this.broker.emit('subscribe', [channel]);
       });
-      this.log.debug('magenta', `Broker PID: ${this.pid} - REDIS Reset subscriptions`);
+      this.log.debug('magenta', `Broker PID: ${this.pid} - REDIS - Reset subscriptions`);
       return true;
     }
     return false;
@@ -74,30 +96,30 @@ class RedisControl {
     try {
       this.connections.forEach((element, key) => {
         element.subClient.on('ready', /* istanbul ignore next */() => {
-          this.log.debug('green', `Broker PID: ${this.pid} - REDIS Connected at ${element.subClient.options.host}:${element.subClient.options.port}`);
+          this.log.debug('green', `Broker PID: ${this.pid} - REDIS - Connected at ${element.subClient.options.host}:${element.subClient.options.port}`);
           if (this.healhServers.indexOf(key) === -1) {
             this.healhServers.push(key);
             if (this.actualServer === -1) {
               [this.actualServer] = this.healhServers;
               this.bindMessages();
               this.resubscribe();
-              this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Current server ${this.actualServer}`);
+              this.checkCurrentServer();
             }
           }
-          this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Health servers: ${this.healhServers}`);
+          this.checkHealthServers();
         });
 
         element.subClient.on('reconnecting', /* istanbul ignore next */() => {
-          this.log.debug('red', `Broker PID: ${this.pid} - REDIS Lost Connection with ${element.subClient.options.host}:${element.subClient.options.port} retrying in 5 seconds`);
+          this.log.debug('red', `Broker PID: ${this.pid} - REDIS - Lost Connection with ${element.subClient.options.host}:${element.subClient.options.port} retrying in 5 seconds`);
           if (this.healhServers.indexOf(key) !== -1) {
             this.log.debug('red', `Broker PID: ${this.pid} - REDIS - Removing health server ${key}`);
             this.healhServers.splice(this.healhServers.indexOf(key), 1);
             [this.actualServer] = this.healhServers;
             this.bindMessages();
             this.resubscribe();
-            this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Current server ${this.actualServer}`);
+            this.checkCurrentServer();
           }
-          this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Health servers: ${this.healhServers}`);
+          this.checkHealthServers();
         });
 
         element.subClient.on('error', this.doNothing());
