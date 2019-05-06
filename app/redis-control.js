@@ -9,13 +9,22 @@ class RedisControl {
     this.instanceIdRegex = /^[^\\/]*\//;
   }
 
+  checkCurrentServer() {
+    if (typeof this.actualServer === 'undefined') {
+      this.log.debug('bright', `Broker PID: ${this.pid} - REDIS - No servers available!`);
+      return false;
+    }
+    this.log.debug('bright', `Broker PID: ${this.pid} - REDIS - Current server ${this.actualServer}`);
+    return true;
+  }
+
   doNothing() {
-    const doNothing = () => { };
+    const doNothing = () => {};
     return doNothing;
   }
 
   bindSubscribe(key) {
-    this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Binding subscribe`);
+    this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS - Binding subscribe`);
     if (this.actualServer > -1 && this.actualServer === key) {
       return this.connections[this.actualServer].subClient.subscribe.bind(
         this.connections[this.actualServer].subClient,
@@ -25,7 +34,7 @@ class RedisControl {
   }
 
   bindUnsubscribe(key) {
-    this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Binding unsubscribe`);
+    this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS - Binding unsubscribe`);
     if (this.actualServer > -1 && this.actualServer === key) {
       return this.connections[this.actualServer].subClient.unsubscribe.bind(
         this.connections[this.actualServer].subClient,
@@ -38,21 +47,23 @@ class RedisControl {
     this.connections.forEach((element) => {
       element.subClient.removeAllListeners('message');
     });
-    this.connections[this.actualServer].subClient.addListener('message', /* istanbul ignore next */(channel, message) => {
-      this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel}: ${message} on server ${this.actualServer}`);
-      let sender = null;
-      const newMessage = message.replace(this.instanceIdRegex, (match) => {
-        sender = match.slice(0, -1);
-        return '';
+    if (typeof this.actualServer !== 'undefined') {
+      this.connections[this.actualServer].subClient.addListener('message', /* istanbul ignore next */(channel, message) => {
+        this.log.debug('yellow', `Broker PID: ${this.pid} - REDIS Channel ${channel}: ${message} on server ${this.actualServer}`);
+        let sender = null;
+        const newMessage = message.replace(this.instanceIdRegex, (match) => {
+          sender = match.slice(0, -1);
+          return '';
+        });
+        if (sender == null || sender !== this.instanceId) {
+          this.broker.publish(channel, newMessage);
+        }
       });
-
-      if (sender == null || sender !== this.instanceId) {
-        this.broker.publish(channel, newMessage);
-      }
-    });
-    this.broker.on('subscribe', this.bindSubscribe(this.actualServer));
-    this.broker.on('unsubscribe', this.bindUnsubscribe(this.actualServer));
-    return true;
+      this.broker.on('subscribe', this.bindSubscribe(this.actualServer));
+      this.broker.on('unsubscribe', this.bindUnsubscribe(this.actualServer));
+      return true;
+    }
+    return false;
   }
 
   resubscribe() {
@@ -77,13 +88,13 @@ class RedisControl {
           this.log.debug('green', `Broker PID: ${this.pid} - REDIS Connected at ${element.subClient.options.host}:${element.subClient.options.port}`);
           if (this.healhServers.indexOf(key) === -1) {
             this.healhServers.push(key);
+            [this.actualServer] = this.healhServers;
             if (this.actualServer === -1) {
-              [this.actualServer] = this.healhServers;
               this.bindMessages();
               this.resubscribe();
-              this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Current server ${this.actualServer}`);
             }
           }
+          this.checkCurrentServer();
           this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Health servers: ${this.healhServers}`);
         });
 
@@ -95,7 +106,7 @@ class RedisControl {
             [this.actualServer] = this.healhServers;
             this.bindMessages();
             this.resubscribe();
-            this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Current server ${this.actualServer}`);
+            this.checkCurrentServer();
           }
           this.log.debug('white', `Broker PID: ${this.pid} - REDIS - Health servers: ${this.healhServers}`);
         });
