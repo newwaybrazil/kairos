@@ -29,7 +29,7 @@ class RedisControl {
   }
 
   doNothing() {
-    const doNothing = () => {};
+    const doNothing = /* istanbul ignore next */() => {};
     return doNothing;
   }
 
