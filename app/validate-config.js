@@ -97,13 +97,12 @@ class ValidateConfig {
     if (config[element].port < 1) {
       this.log.debug('red', 'Config element port property must be grater than 0');
       this.throwConfigError();
-      return false;
     }
     return false;
   }
 
   throwConfigError() {
-    const message = 'Error on load config see the file ./config/config.js';
+    const message = 'Error on load config see the file ./config/redis.js';
     throw new Error(message);
   }
 }

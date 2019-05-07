@@ -5,37 +5,40 @@ const simple = require('simple-mock');
 const { expect } = chai;
 chai.use(dirtyChai);
 
-const SocketControl = require('../app/socket-control.js');
+const BrokerControl = require('../app/broker-control.js');
 
-const socketSpy = simple.spy(() => { });
 const logSpy = simple.spy(() => { });
+const scBrokerSpy = simple.spy(() => { });
+const pid = 1234;
 
-describe('SocketControl', () => {
+describe('BrokerControl', () => {
 
   describe('constructor', () => {
     it('should instanciate the class', () => {
-      const socketControl = new SocketControl(
+      const BrokerControl = new BrokerControl(
         logSpy,
-        socketSpy
+        scBrokerSpy,
+        pid
       );
-      expect(typeof socketControl).to.equal('object');
-      expect(typeof socketControl.publish).to.equal('function');
+      expect(typeof BrokerControl).to.equal('object');
+      expect(typeof BrokerControl.listen).to.equal('function');
     });
   });
 
   describe('publish', () => {
-    it('should publish and return true', () => {
+    it('should listen and return true', () => {
       const ScServer = new Object();
       simple.mock(ScServer, 'publish');
       ScServer.publish.returnWith(true);
       const objectSocket = {
         exchange: ScServer,
       };
-      const socketControl = new SocketControl(
+      const BrokerControl = new BrokerControl(
         logSpy,
-        objectSocket
+        objectSocket,
+        pid
       );
-      result = socketControl.publish('channel1', 'message');
+      result = BrokerControl.publish('channel1', 'message');
       expect(typeof result).to.equal('boolean');
       expect(result).to.equal(true);
     });
@@ -47,11 +50,11 @@ describe('SocketControl', () => {
       const objectSocket2 = {
         exchange: ScServer2,
       };
-      const socketControl = new SocketControl(
+      const BrokerControl = new BrokerControl(
         logSpy,
         objectSocket2
       );
-      result = socketControl.publish('channel1', 'message');
+      result = BrokerControl.publish('channel1', 'message');
       expect(typeof result).to.equal('boolean');
       expect(result).to.equal(false);
     });
@@ -70,11 +73,11 @@ describe('SocketControl', () => {
           ScServer3
         }
       };
-      const socketControl3 = new SocketControl(
+      const BrokerControl3 = new BrokerControl(
         logSpy,
         objectSocket3
       );
-      result = socketControl3.emit('message');
+      result = BrokerControl3.emit('message');
       expect(typeof result).to.equal('boolean');
       expect(result).to.equal(true);
     });
@@ -89,11 +92,11 @@ describe('SocketControl', () => {
           ScServer4
         }
       };
-      const socketControl4 = new SocketControl(
+      const BrokerControl4 = new BrokerControl(
         logSpy,
         objectSocket4
       );
-      result = socketControl4.emit('message');
+      result = BrokerControl4.emit('message');
       expect(typeof result).to.equal('boolean');
       expect(result).to.equal(false);
     });
@@ -106,11 +109,11 @@ describe('SocketControl', () => {
       const ScServer5 = new Object();
       simple.mock(ScServer5, 'on');
       ScServer5.on.returnWith(true);
-      const socketControl5 = new SocketControl(
+      const BrokerControl5 = new BrokerControl(
         logSpy,
         ScServer5
       );
-      result = socketControl5.listen();
+      result = BrokerControl5.listen();
       expect(typeof result).to.equal('boolean');
       expect(result).to.equal(true);
     });
@@ -119,11 +122,11 @@ describe('SocketControl', () => {
       const ScServer6 = new Object();
       simple.mock(ScServer6, 'on');
       ScServer6.on.throwWith(new Error());
-      const socketControl6 = new SocketControl(
+      const BrokerControl6 = new BrokerControl(
         logSpy,
         ScServer6
       );
-      result = socketControl6.listen((isValid) => {
+      result = BrokerControl6.listen((isValid) => {
         assert.equal(isValid, true);
         done();
       });

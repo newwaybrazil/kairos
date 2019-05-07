@@ -1,6 +1,6 @@
 const SCBroker = require('socketcluster/scbroker');
 const scClusterBrokerClient = require('scc-broker-client');
-const kairosBroker = require('./app/kairos-broker.js');
+const kairosBroker = require('./kairos-broker.js');
 
 const Log = require('./app/log.js');
 const Colors = require('./app/colors.js');

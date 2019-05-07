@@ -1,11 +1,11 @@
 const Redis = require('ioredis');
 
-const Log = require('./log.js');
-const Colors = require('./colors.js');
-const DateTime = require('./date-time.js');
-const Config = require('../config/redis.js');
-const RedisConnections = require('./redis-connections');
-const RedisControl = require('./redis-control');
+const Log = require('./app/log.js');
+const Colors = require('./app/colors.js');
+const DateTime = require('./app/date-time.js');
+const Config = require('./config/redis.js');
+const RedisConnections = require('./app/redis-connections');
+const RedisControl = require('./app/redis-control');
 
 const dateTime = new DateTime();
 const log = new Log(dateTime, Colors);
