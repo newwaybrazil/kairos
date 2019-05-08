@@ -42,7 +42,7 @@
   "readmeFilename": "README.md",
   "scripts": {
     "start": "node server.js",
-    "start:docker": "node dockerwait.js && node ${SOCKETCLUSTER_MASTER_CONTROLLER:-server.js}",
+    "start:docker": "node dockerwait.js && node ${KAIROS_MASTER_CONTROLLER:-server.js -w2 -b2}",
     "test": "nyc --reporter=html --reporter=text --reporter=lcov mocha",
     "lint": "./node_modules/eslint/bin/eslint.js *.js ./app/*.js ./config/*.js"
   },

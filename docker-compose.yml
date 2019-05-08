@@ -1,0 +1,38 @@
+version: "3"
+services:
+  kairos-redis-1:
+    hostname: kairos-redis-1
+    container_name: kairos-redis-1
+    image: leosarli/redis-pubsub
+    sysctls:
+      net.core.somaxconn: 1024
+    ports:
+      - "6379:6379"
+    expose:
+      - 6379
+    restart: always
+  kairos-redis-2:
+    hostname: kairos-redis-2
+    container_name: kairos-redis-2
+    image: leosarli/redis-pubsub
+    sysctls:
+      net.core.somaxconn: 1024
+    ports:
+      - "6380:6379"
+    expose:
+      - 6379
+    restart: always
+  kairos:
+    hostname: kairos
+    container_name: kairos
+    image: leosarli/kairos
+    volumes:
+     - ./:/usr/src
+    ports:
+      - "8000:8000"
+    expose:
+      - 8000
+    restart: always
+
+    
+    

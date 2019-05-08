@@ -1,7 +1,7 @@
 FROM node:8-slim
 
-LABEL version="14.3.2"
-LABEL description="Docker file for SocketCluster with support for clustering."
+LABEL version="2.0.0"
+LABEL description="Docker file for Kairos with support for clustering."
 
 RUN mkdir -p /usr/src/
 WORKDIR /usr/src/
