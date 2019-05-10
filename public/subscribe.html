@@ -3,12 +3,21 @@
   <head>
     <title>Socket Client</title>
     <link rel="icon" type="image/png" href="/favicon.ico">
-    <script type="text/javascript" src="/socketcluster.js"></script>
+    <script type="text/javascript" src="/kairos.js"></script>
   </head>
     <body>
+    <label>Channel:</label>
+    <br />
     <input id="channel" />
     <button id="subscribe" onclick="subscribe()">Subscribe</button>
     <button id="unsubscribe" onclick="unsubscribe()">Unsubscribe</button>
+    <br />
+    <br />
+    <label>Message:</label>
+    <br />
+    <input id="message" />
+    <button id="publish" onclick="publish()">Publish</button>
+    <br />
     <p id="messages"></p>
     <ul id="terminal"></ul>
     <script type="text/javascript">
@@ -49,8 +58,7 @@
 
       function subscribe()
       {
-        var input = document.getElementById('channel');
-        var channel = input.value;
+        var channel = document.getElementById('channel').value;
 
         var alreadySub = socket.isSubscribed(channel);
         if (!alreadySub) {
@@ -70,14 +78,25 @@
 
       function unsubscribe()
       {
-        var input = document.getElementById('channel');
-        var channel = input.value;
+        var channel = document.getElementById('channel').value;
 
         var alreadySub = socket.isSubscribed(channel);
         if (alreadySub) {
             socket.unsubscribe(channel);
             write('Unsubscribe to channel: ' + channel, messages);
         }
+      }
+
+      function publish()
+      {
+        var channel = document.getElementById('channel').value;
+        var message = document.getElementById('message').value;
+        var data = {
+            data : message
+        };
+
+        socket.publish(channel, data);
+        write('Publish to channel: ' + channel + ' message: ' + JSON.stringify(data), messages);
       }
     </script>
   </body>

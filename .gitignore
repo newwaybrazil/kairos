@@ -6,12 +6,14 @@
 .npm
 .nyc_output
 .scannerwork
+.vscode
 *.log
 *.pid
 *.pid.lock
 *.seed
 *.tgz
 bower_components
+config/redis.js
 coverage
 jspm_packages/
 logs

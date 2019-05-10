@@ -1,5 +1,4 @@
 class DateTime {
-  // eslint-disable-next-line class-methods-use-this
   alwaysTwoDigits(number) {
     let result = number;
     if (result < 10) {
@@ -8,7 +7,6 @@ class DateTime {
     return String(result);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getFullYear() {
     const currentDate = new Date();
     return currentDate.getFullYear();

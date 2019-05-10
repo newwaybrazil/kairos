@@ -5,7 +5,6 @@ class Log {
   }
 
   debug(color, message) {
-    // eslint-disable-next-line no-console
     console.log(
       this.colors[color],
       `${this.date.getDate()} - ${message}`,

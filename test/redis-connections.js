@@ -7,7 +7,16 @@ chai.use(dirtyChai);
 
 const RedisConections = require('../app/redis-connections.js');
 
-const config = require('../config/config.js');
+const config = [
+  {
+    host: 'localhost',
+    port: 6379,
+  },
+  {
+    host: 'localhost',
+    port: 6380,
+  },
+];
 const Redis = [];
 
 const redisSpy = simple.spy(() => { });
@@ -26,13 +35,15 @@ describe('RedisConections', () => {
   });
 
   describe('connect', () => {
-    it('should connect and return an array with connections', () => {
+    it('should connect and return an array with pub and sub connections', () => {
       const redisConnections = new RedisConections(
         config,
         redisSpy
       );
       result = redisConnections.connect();
       expect(typeof result).to.equal('object');
+      expect(typeof result[0].pubClient).to.equal('object');
+      expect(typeof result[1].pubClient).to.equal('object');
       expect(Object.keys(result).length).to.equal(2);
     });
 
