@@ -19,6 +19,7 @@ jspm_packages/
 logs
 node_modules/
 npm-debug.log*
+package-lock.json
 pids
 yarn-debug.log*
 yarn-error.log*
