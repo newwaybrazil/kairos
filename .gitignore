@@ -13,7 +13,6 @@
 *.seed
 *.tgz
 bower_components
-config/redis.js
 coverage
 jspm_packages/
 logs
