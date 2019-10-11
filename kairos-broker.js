@@ -11,7 +11,8 @@ const dateTime = new DateTime();
 const log = new Log(dateTime, Colors);
 
 module.exports.attach = (broker) => {
-  const redisConnections = new RedisConnections(Config, Redis);
+  const config = Config.redisConnections();
+  const redisConnections = new RedisConnections(config, Redis);
   const connections = redisConnections.connect();
 
   const redisControl = new RedisControl(log, connections, process.pid, broker);

@@ -65,7 +65,8 @@ const filesReadyPromises = [
 
 Promise.all(filesReadyPromises)
   .then(() => {
-    validateConfig.validate(RedisConfig);
+    const config = RedisConfig.redisConnections();
+    validateConfig.validate(config);
   })
   .then(() => {
     start();
