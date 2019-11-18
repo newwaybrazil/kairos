@@ -1,103 +1,114 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Socket Client</title>
-    <link rel="icon" type="image/png" href="/favicon.ico">
-    <script type="text/javascript" src="/kairos.js"></script>
-  </head>
-    <body>
-    <label>Channel:</label>
-    <br />
-    <input id="channel" />
-    <button id="subscribe" onclick="subscribe()">Subscribe</button>
-    <button id="unsubscribe" onclick="unsubscribe()">Unsubscribe</button>
-    <br />
-    <br />
-    <label>Message:</label>
-    <br />
-    <input id="message" />
-    <button id="publish" onclick="publish()">Publish</button>
-    <br />
-    <p id="messages"></p>
-    <ul id="terminal"></ul>
-    <script type="text/javascript">
-        function write(text, msgs)
-        {
-            var date = new Date();
-            var dateText = '['+date.getFullYear()+'-'+(date.getMonth()+1 > 9 ? date.getMonth()+1 : '0'+date.getMonth()+1)+'-'+(date.getDate() > 9 ? date.getDate() : '0'+date.getDate())+' '+(date.getHours() > 9 ? date.getHours() : '0'+date.getHours())+':'+(date.getMinutes() > 9 ? date.getMinutes() : '0'+date.getMinutes())+':'+(date.getSeconds() > 9 ? date.getSeconds() : '0'+date.getSeconds())+']';
-            var terminal = document.getElementById('terminal');
-            var messages = document.getElementById('messages');
 
-            if (terminal.innerHTML.length > 5000) {
-                terminal.innerHTML = '';
-            }
-            
-            terminal.innerHTML = '<li>'+dateText+' '+text+'</li>'+terminal.innerHTML;
-            messages.innerHTML = msgs;
-        }
+<head>
+  <title>Socket Client</title>
+  <script type="text/javascript" src="/kairos.js"></script>
+</head>
 
-      var socket = socketCluster.connect();
-      var messages = 0;
+<body>
+  <label>Channel:</label>
+  <br />
+  <input id="channel" />
+  <button id="subscribe" onclick="subscribe()">Subscribe</button>
+  <button id="unsubscribe" onclick="unsubscribe()">Unsubscribe</button>
+  <br />
+  <br />
+  <label>Message:</label>
+  <br />
+  <input id="message" />
+  <button id="publish" onclick="publish()">Publish</button>
+  <br />
+  <p id="messages"></p>
+  <ul id="terminal"></ul>
+  <script type="text/javascript">
+    function write(text, msgs) {
+      var date = new Date();
+      var dateText = '[' + date.getFullYear() + '-' + (date.getMonth() + 1 > 9 ? date.getMonth() + 1 : '0' + date.getMonth() + 1) + '-' + (date.getDate() > 9 ? date.getDate() : '0' + date.getDate()) + ' ' + (date.getHours() > 9 ? date.getHours() : '0' + date.getHours()) + ':' + (date.getMinutes() > 9 ? date.getMinutes() : '0' + date.getMinutes()) + ':' + (date.getSeconds() > 9 ? date.getSeconds() : '0' + date.getSeconds()) + ']';
+      var terminal = document.getElementById('terminal');
+      var messages = document.getElementById('messages');
 
-      socket.on('error', function (err) {
-        console.error(err);
-      });
-
-      socket.on('connect', function () {
-        write('Socket is connected', 0);
-      });
-
-      socket.on('disconnect', function () {
-        write('Socket is disconnected', 0);
-      });
-
-      socket.on('generic', function (data) {
-        messages++;
-        write('Received generic event with data: ' + data, messages);
-      });
-
-      function subscribe()
-      {
-        var channel = document.getElementById('channel').value;
-
-        var alreadySub = socket.isSubscribed(channel);
-        if (!alreadySub) {
-            var sampleChannel = socket.subscribe(channel);
-            write('Subscribe to channel: ' + channel, messages);
-
-            sampleChannel.watch(function (data) {
-                messages++;
-                write('Channel ' + channel + ' message: ' + data, messages);
-            });
-
-            sampleChannel.on('subscribeFail', function (err) {
-                console.log('Error on subscribe channel ' + channel);
-            });
-        }
+      if (terminal.innerHTML.length > 5000) {
+        terminal.innerHTML = '';
       }
 
-      function unsubscribe()
-      {
-        var channel = document.getElementById('channel').value;
+      terminal.innerHTML = '<li>' + dateText + ' ' + text + '</li>' + terminal.innerHTML;
+      messages.innerHTML = msgs;
+    }
 
-        var alreadySub = socket.isSubscribed(channel);
-        if (alreadySub) {
-            socket.unsubscribe(channel);
-            write('Unsubscribe to channel: ' + channel, messages);
-        }
+    //set token to auth
+    //localStorage.setItem('socketCluster.authToken', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJTV05jSC1idUFJTjhjWFFBQUFBMiIsImV4cCI6OTAwLCJpYXQiOjE1NzA2NDgzMDAsImlzcyI6IlNXTmNILWJ1QUlOOGNYUUFBQUEyIiwic3ViIjoiZDMxZDhlZjc0NDhiNzRiYjgwOGUzZWU4YTI5ZmNhNGNiNzc4ZDE5OTdhNjk2MTZkYTJhYTRiYzBlM2FmZThmYSJ9.9srgsSTCjHEStu/hjFXpxrY20lR0b3+S7KvIH4dRY/w=');
+
+    var socket = socketCluster.connect({
+      query: {
+        auth: 'f2nnCd2DACeibe7OZGfMJJk1aWCVJPU1',
       }
+    });
 
-      function publish()
-      {
-        var channel = document.getElementById('channel').value;
-        var message = document.getElementById('message').value;
-        var data = {
-            data : message
-        };
+    var messages = 0;
+    var socketId = null;
 
-        socket.publish(channel, data);
-        write('Publish to channel: ' + channel + ' message: ' + JSON.stringify(data), messages);
+    socket.on('error', function (err) {
+      console.error(err);
+    });
+
+    socket.on('connect', function () {
+      socketId = socket.id;
+      console.log(socketId);
+      write('Socket is connected', 0);
+    });
+
+    socket.on('disconnect', function () {
+      socketId = null;
+      console.log(socketId);
+      write('Socket is disconnected', 0);
+    });
+
+    socket.on('generic', function (data) {
+      messages++;
+      write('Received generic event with data: ' + data, messages);
+    });
+
+    function subscribe() {
+      var channel = document.getElementById('channel').value;
+
+      var alreadySub = socket.isSubscribed(channel);
+      if (!alreadySub) {
+        var sampleChannel = socket.subscribe(channel);
+        write('Subscribe to channel: ' + channel, messages);
+
+        sampleChannel.watch(function (data) {
+          messages++;
+          write('Channel ' + channel + ' message: ' + data, messages);
+        });
+
+        sampleChannel.on('subscribeFail', function (err) {
+          console.log('Error on subscribe channel ' + channel);
+        });
       }
-    </script>
-  </body>
+    }
+
+    function unsubscribe() {
+      var channel = document.getElementById('channel').value;
+
+      var alreadySub = socket.isSubscribed(channel);
+      if (alreadySub) {
+        socket.unsubscribe(channel);
+        write('Unsubscribe to channel: ' + channel, messages);
+      }
+    }
+
+    function publish() {
+      var channel = document.getElementById('channel').value;
+      var message = document.getElementById('message').value;
+      var data = {
+        data: message
+      };
+
+      socket.publish(channel, data);
+      write('Publish to channel: ' + channel + ' message: ' + JSON.stringify(data), messages);
+    }
+  </script>
+</body>
+
 </html>

@@ -1,7 +1,7 @@
 {
   "name": "kairos",
   "description": "Simple Node.js App to listen Redis PubSub Channels and publishing in SocketCluster WebSocket to subscribed Clients.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "contributors": [
     {
       "name": "Leo Di Sarli",
@@ -22,6 +22,7 @@
     "sc-errors": "1.4.1",
     "sc-framework-health-check": "2.0.0",
     "sc-hot-reboot": "1.0.0",
+    "sc-uws": "^10.148.2",
     "scc-broker-client": "6.1.0",
     "serve-static": "1.13.2",
     "simple-mock": "0.8.0",
@@ -41,7 +42,7 @@
     "start": "node server.js",
     "start:docker": "node dockerwait.js && node ${KAIROS_MASTER_CONTROLLER:-server.js -w2 -b2}",
     "test": "nyc --reporter=html --reporter=text --reporter=lcov mocha",
-    "lint": "./node_modules/eslint/bin/eslint.js *.js ./app/*.js ./config/*.js"
+    "lint": "./node_modules/eslint/bin/eslint.js *.js ./app/*.js ./config/*.js ./middleware/*.js"
   },
   "devDependencies": {
     "chai": "^4.2.0",
