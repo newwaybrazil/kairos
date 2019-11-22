@@ -1,11 +1,15 @@
 {
   "name": "kairos",
   "description": "Simple Node.js App to listen Redis PubSub Channels and publishing in SocketCluster WebSocket to subscribed Clients.",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "contributors": [
     {
       "name": "Leo Di Sarli",
       "email": "leosarli@gmail.com"
+    },
+    {
+      "name": "Julio Cesar de Camargo",
+      "email": "julioocamargoo@gmail.com"
     }
   ],
   "dependencies": {
