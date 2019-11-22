@@ -1,30 +1,32 @@
 {
   "name": "kairos",
   "description": "Simple Node.js App to listen Redis PubSub Channels and publishing in SocketCluster WebSocket to subscribed Clients.",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "contributors": [
     {
       "name": "Leo Di Sarli",
       "email": "leosarli@gmail.com"
+    },
+    {
+      "name": "Julio Cesar de Camargo",
+      "email": "julioocamargoo@gmail.com"
     }
   ],
   "dependencies": {
     "braces": "2.3.2",
-    "chai": "4.2.0",
     "connect": "3.6.6",
-    "dirty-chai": "2.0.1",
     "dotenv": "7.0.0",
     "express": "4.16.3",
     "ioredis": "4.6.2",
     "micromatch": "3.1.10",
     "minimist": "1.1.0",
-    "mocha": "6.0.2",
     "morgan": "1.9.1",
     "nyc": "13.3.0",
     "promise": "8.0.2",
     "sc-errors": "1.4.1",
     "sc-framework-health-check": "2.0.0",
     "sc-hot-reboot": "1.0.0",
+    "sc-uws": "^10.148.2",
     "scc-broker-client": "6.1.0",
     "serve-static": "1.13.2",
     "simple-mock": "0.8.0",
@@ -47,8 +49,11 @@
     "lint": "./node_modules/eslint/bin/eslint.js *.js ./app/*.js ./config/*.js ./middleware/*.js"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "dirty-chai": "^2.0.1",
     "eslint": "5.15.2",
     "eslint-config-airbnb-base": "13.1.0",
-    "eslint-plugin-import": "2.16.0"
+    "eslint-plugin-import": "2.16.0",
+    "mocha": "^6.2.0"
   }
 }

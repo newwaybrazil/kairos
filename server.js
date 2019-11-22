@@ -8,7 +8,7 @@ const fsUtil = require('socketcluster/fsutil');
 const Log = require('./app/log.js');
 const Colors = require('./app/colors.js');
 const DateTime = require('./app/date-time.js');
-const RedisConfig = require('./config/redis');
+const config = require('./config/redis');
 const SocketConfig = require('./config/socket');
 const ValidateConfig = require('./app/validate-config');
 
@@ -65,7 +65,6 @@ const filesReadyPromises = [
 
 Promise.all(filesReadyPromises)
   .then(() => {
-    const config = RedisConfig.redisConnections();
     validateConfig.validate(config);
   })
   .then(() => {
