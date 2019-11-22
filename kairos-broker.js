@@ -3,7 +3,7 @@ const Redis = require('ioredis');
 const Log = require('./app/log.js');
 const Colors = require('./app/colors.js');
 const DateTime = require('./app/date-time.js');
-const Config = require('./config/redis.js');
+const config = require('./config/redis.js');
 const RedisConnections = require('./app/redis-connections');
 const RedisControl = require('./app/redis-control');
 
@@ -11,7 +11,6 @@ const dateTime = new DateTime();
 const log = new Log(dateTime, Colors);
 
 module.exports.attach = (broker) => {
-  const config = Config.redisConnections();
   const redisConnections = new RedisConnections(config, Redis);
   const connections = redisConnections.connect();
 
