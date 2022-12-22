@@ -30,7 +30,7 @@
     "scc-broker-client": "6.1.0",
     "serve-static": "1.13.2",
     "simple-mock": "0.8.0",
-    "socketcluster": "14.3.2",
+    "socketcluster": "17.2.0",
     "socketcluster-client": "14.2.1"
   },
   "keywords": [
